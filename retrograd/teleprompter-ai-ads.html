@@ -1,0 +1,296 @@
+<title>Суфлёр: реклама и ИИ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;700&family=Prata&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one dark screen. Text scrolls under a fixed brass reading line; controls sit in a bottom bar that dims while rolling. */
+:root {
+  color-scheme: dark;
+  --bg: #0c0b0a;
+  --fg: #f3efe6;
+  --dim: #8a847a;
+  --brass: #d8b46a;
+  --bar: #171512;
+  --line: #2a2621;
+  --font-text: "Golos Text", "Segoe UI", Roboto, Arial, sans-serif;
+  --font-brand: "Prata", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --size: 48px;
+}
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-text);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.top {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  padding: 10px 16px; border-bottom: 1px solid var(--line);
+  transition: opacity .4s;
+}
+.brand { font-family: var(--font-brand); font-size: 18px; letter-spacing: .02em; }
+.brand span { color: var(--brass); }
+.meta { font-family: var(--font-mono); font-size: 12px; color: var(--dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.stage { position: relative; flex: 1; min-height: 0; }
+.scroller {
+  position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: none; cursor: pointer;
+}
+.scroller::-webkit-scrollbar { display: none; }
+.script {
+  max-width: 24em; margin: 0 auto;
+  padding: 34vh 16px 75vh;
+  font-size: var(--size); line-height: 1.38; font-weight: 500;
+  transform-origin: center;
+}
+.script.mirror { transform: scaleX(-1); }
+.script p { margin: 0 0 .55em; text-wrap: pretty; }
+.script em { font-style: normal; color: var(--brass); }
+.script .cue {
+  font-family: var(--font-mono); font-size: .38em; font-weight: 400; color: var(--dim);
+  letter-spacing: .12em; text-transform: uppercase; margin: .2em 0 1.1em;
+}
+.script .cue::before { content: "— "; }
+.guide {
+  position: absolute; left: 0; right: 0; top: 34vh; height: 0; pointer-events: none;
+  border-top: 1px dashed color-mix(in srgb, var(--brass) 45%, transparent);
+}
+.guide::before, .guide::after {
+  content: ""; position: absolute; top: -9px; border: 9px solid transparent;
+}
+.guide::before { left: 0; border-left-color: var(--brass); }
+.guide::after { right: 0; border-right-color: var(--brass); }
+.fade-top {
+  position: absolute; left: 0; right: 0; top: 0; height: 18vh; pointer-events: none;
+  background: linear-gradient(var(--bg), transparent);
+}
+.count {
+  position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none;
+  font-family: var(--font-brand); font-size: 22vh; color: var(--brass);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+}
+.progress { height: 3px; background: var(--line); }
+.progress i { display: block; height: 100%; width: 0; background: var(--brass); }
+.bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: var(--bar); transition: opacity .4s;
+}
+body.rolling .bar, body.rolling .top { opacity: .18; }
+body.rolling .bar:hover, body.rolling .bar:focus-within { opacity: 1; }
+button {
+  font: 500 14px var(--font-text); color: var(--fg); background: transparent;
+  border: 1px solid var(--line); border-radius: 6px; padding: 9px 14px; cursor: pointer;
+}
+button:hover { border-color: var(--dim); }
+button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+button.primary { background: var(--brass); color: #17130c; border-color: var(--brass); min-width: 112px; font-weight: 700; }
+button[aria-pressed="true"] { border-color: var(--brass); color: var(--brass); }
+.ctl { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--dim); }
+.ctl output { font-family: var(--font-mono); color: var(--fg); min-width: 3ch; font-variant-numeric: tabular-nums; }
+input[type="range"] { accent-color: var(--brass); width: 110px; }
+.spacer { flex: 1; }
+.keys { font-family: var(--font-mono); font-size: 11px; color: var(--dim); width: 100%; }
+.editor {
+  position: absolute; inset: 0; display: flex; flex-direction: column; gap: 10px;
+  padding: 16px; background: var(--bg);
+}
+.editor textarea {
+  flex: 1; min-height: 0; width: 100%; resize: none; box-sizing: border-box;
+  background: var(--bar); color: var(--fg); border: 1px solid var(--line); border-radius: 6px;
+  padding: 14px; font: 400 17px/1.55 var(--font-text);
+}
+.editor .hint { font-size: 13px; color: var(--dim); line-height: 1.5; }
+.editor .row { display: flex; flex-wrap: wrap; gap: 10px; }
+@media (max-width: 560px) {
+  :root { --size: 32px; }
+  input[type="range"] { width: 84px; }
+  .keys { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar, .top { transition: none; }
+}
+</style>
+
+<header class="top">
+  <div class="brand">Ретро<span>град</span> · суфлёр</div>
+  <div class="meta" id="meta">0:00</div>
+</header>
+
+<main class="stage">
+  <div class="scroller" id="scroller" aria-label="Текст суфлёра. Нажмите, чтобы запустить или остановить">
+    <div class="script" id="script"></div>
+  </div>
+  <div class="fade-top"></div>
+  <div class="guide" aria-hidden="true"></div>
+  <div class="count" id="count" hidden></div>
+  <section class="editor" id="editor" hidden>
+    <div class="hint">Каждая строка — отдельный абзац на экране. <b>*слово*</b> подсветится как ударное. Строка в [квадратных скобках] — подсказка для себя, например [пауза].</div>
+    <textarea id="source" spellcheck="true" aria-label="Текст для суфлёра"></textarea>
+    <div class="row">
+      <button class="primary" id="saveEdit">Готово</button>
+      <button id="resetText">Вернуть исходный текст</button>
+    </div>
+  </section>
+</main>
+
+<div class="progress"><i id="prog"></i></div>
+<nav class="bar">
+  <button class="primary" id="play">▶ Старт</button>
+  <button id="restart">В начало</button>
+  <label class="ctl" for="speed">Скорость <input type="range" id="speed" min="1" max="20" step="1" value="6"><output id="speedOut">6</output></label>
+  <label class="ctl" for="size">Шрифт <input type="range" id="size" min="24" max="110" step="2" value="48"><output id="sizeOut">48</output></label>
+  <button id="mirror" aria-pressed="false">Зеркало</button>
+  <button id="countBtn" aria-pressed="true">Отсчёт 3 с</button>
+  <span class="spacer"></span>
+  <button id="edit">Редактировать текст</button>
+  <button id="full">Во весь экран</button>
+  <div class="keys">Пробел — старт/пауза · ↑↓ — скорость · + − — шрифт · M — зеркало · R — в начало · F — весь экран · колесо мыши — подвинуть текст</div>
+</nav>
+
+<script>
+const ORIGINAL = `Чем вредна реклама, созданная *искусственным интеллектом*?
+[пауза]
+Да-да, не только то, что мы принимаем в пищу, может быть *токсичным*!
+[пауза]
+Серые улыбающиеся лица на билбордах безжизненно мертвы.
+Так же, как вовсе не вызывающие аппетита землистого цвета блюда в меню ресторанов и кафе.
+[пауза]
+Почему эти изображения отвратительны?
+Очень просто!
+В них *нет жизни*. У них *нет истории создания*.
+[пауза]
+Фотомодели, смотревшие прежде с обложек модных журналов, всё-таки были *реальными людьми*.
+У них была биография, мы знали сплетни об их личной жизни,
+мы видели, как они стареют, и в конце концов — как умирают.
+[пауза]
+Даже фуд-сессии фотографам давались непросто.
+Хотя фотоаппарат на самом деле тот ещё монстр, — но об этом позже.
+[с улыбкой]
+Надо было накрыть скатертью стол, создать интерьер и быть в хорошем настроении, чтобы получилось «вкусно».
+[пауза]
+За всем этим стоял процесс, в который были включены *живые люди* — со своими проблемами, желаниями, возможностями.
+И поэтому нам нравилась либо не нравилась реклама.
+[пауза]
+Сейчас же мы *равнодушны*!
+И в этом самая большая беда.
+Ведь в этом равнодушии гибнут *живые клетки нашей души*!
+[долгая пауза, взгляд в камеру]
+Помни! Предупреждён — значит вооружён.
+Технику безопасности никто не отменял.
+Формируй стойкий *иммунитет*.
+[пауза]
+Как? Об этом мы ещё поговорим.`;
+
+const $ = id => document.getElementById(id);
+const scroller = $('scroller'), script = $('script'), playBtn = $('play');
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('retro-tp-ads-' + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('retro-tp-ads-' + k, JSON.stringify(v)); } catch {} }
+};
+
+let text = store.get('text', ORIGINAL);
+let speed = store.get('speed', 6);
+let size = store.get('size', window.innerWidth < 560 ? 32 : 48);
+let mirror = store.get('mirror', false);
+let useCount = store.get('count', true);
+let rolling = false, last = 0, acc = 0, elapsed = 0, raf = 0, lock = null, countTimer = 0;
+
+function esc(s) { return s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+function render() {
+  script.innerHTML = text.split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const cue = l.match(/^\[(.+)\]$/);
+    if (cue) return `<p class="cue">${esc(cue[1])}</p>`;
+    return `<p>${esc(l).replace(/\*(.+?)\*/g, '<em>$1</em>')}</p>`;
+  }).join('');
+  const words = text.replace(/\[.*?\]/g, '').split(/\s+/).filter(Boolean).length;
+  const min = words / 120;
+  $('meta').dataset.est = `≈ ${Math.floor(min)}:${String(Math.round((min % 1) * 60)).padStart(2, '0')} в спокойном темпе`;
+  updateMeta();
+}
+function fmt(s) { s = Math.floor(s); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }
+function updateMeta() { $('meta').textContent = `${fmt(elapsed)} · ${$('meta').dataset.est || ''}`; }
+function applySettings() {
+  document.documentElement.style.setProperty('--size', size + 'px');
+  $('size').value = size; $('sizeOut').textContent = size;
+  $('speed').value = speed; $('speedOut').textContent = speed;
+  script.classList.toggle('mirror', mirror);
+  $('mirror').setAttribute('aria-pressed', mirror);
+  $('countBtn').setAttribute('aria-pressed', useCount);
+}
+function progress() {
+  const max = scroller.scrollHeight - scroller.clientHeight;
+  $('prog').style.width = (max > 0 ? Math.min(100, scroller.scrollTop / max * 100) : 0) + '%';
+}
+function tick(t) {
+  if (!rolling) return;
+  const dt = last ? Math.min(0.1, (t - last) / 1000) : 0; last = t;
+  elapsed += dt;
+  acc += dt * speed * size * 0.09;
+  const step = Math.floor(acc);
+  if (step) { scroller.scrollTop += step; acc -= step; }
+  progress(); updateMeta();
+  if (scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 1) { stop(); return; }
+  raf = requestAnimationFrame(tick);
+}
+async function start() {
+  if (!$('editor').hidden) return;
+  rolling = true; last = 0; document.body.classList.add('rolling');
+  playBtn.textContent = '❚❚ Пауза';
+  try { lock = await navigator.wakeLock?.request('screen'); } catch { lock = null; }
+  raf = requestAnimationFrame(tick);
+}
+function stop() {
+  rolling = false; cancelAnimationFrame(raf); clearInterval(countTimer);
+  $('count').hidden = true; document.body.classList.remove('rolling');
+  playBtn.textContent = '▶ Старт';
+  try { lock?.release(); } catch {} lock = null;
+}
+function toggle() {
+  if (rolling || !$('count').hidden) { stop(); return; }
+  if (useCount && scroller.scrollTop < 5) {
+    let n = 3; const c = $('count'); c.hidden = false; c.textContent = n;
+    playBtn.textContent = '❚❚ Пауза';
+    countTimer = setInterval(() => {
+      n--; if (n > 0) { c.textContent = n; return; }
+      clearInterval(countTimer); c.hidden = true; start();
+    }, 1000);
+  } else start();
+}
+function restart() { stop(); scroller.scrollTop = 0; elapsed = 0; acc = 0; progress(); updateMeta(); }
+
+playBtn.onclick = toggle;
+scroller.onclick = toggle;
+scroller.addEventListener('scroll', progress, { passive: true });
+$('restart').onclick = restart;
+$('speed').oninput = e => { speed = +e.target.value; store.set('speed', speed); applySettings(); };
+$('size').oninput = e => { size = +e.target.value; store.set('size', size); applySettings(); };
+$('mirror').onclick = () => { mirror = !mirror; store.set('mirror', mirror); applySettings(); };
+$('countBtn').onclick = () => { useCount = !useCount; store.set('count', useCount); applySettings(); };
+$('full').onclick = async () => {
+  try { document.fullscreenElement ? await document.exitFullscreen() : await document.documentElement.requestFullscreen(); } catch {}
+};
+$('edit').onclick = () => { stop(); $('source').value = text; $('editor').hidden = false; $('source').focus(); };
+$('saveEdit').onclick = () => { text = $('source').value; store.set('text', text); $('editor').hidden = true; render(); restart(); };
+$('resetText').onclick = () => { $('source').value = ORIGINAL; };
+document.addEventListener('keydown', e => {
+  if (!$('editor').hidden) return;
+  const k = e.key;
+  if (e.target.type === 'range' && k.startsWith('Arrow')) return;
+  if (k === ' ') { e.preventDefault(); toggle(); }
+  else if (k === 'ArrowUp') { e.preventDefault(); speed = Math.min(20, speed + 1); store.set('speed', speed); applySettings(); }
+  else if (k === 'ArrowDown') { e.preventDefault(); speed = Math.max(1, speed - 1); store.set('speed', speed); applySettings(); }
+  else if (k === '+' || k === '=') { size = Math.min(110, size + 4); store.set('size', size); applySettings(); }
+  else if (k === '-' || k === '_') { size = Math.max(24, size - 4); store.set('size', size); applySettings(); }
+  else if (k === 'm' || k === 'M' || k === 'ь' || k === 'Ь') { $('mirror').click(); }
+  else if (k === 'r' || k === 'R' || k === 'к' || k === 'К') { restart(); }
+  else if (k === 'f' || k === 'F' || k === 'а' || k === 'А') { $('full').click(); }
+});
+document.addEventListener('keyup', e => { if (e.key === ' ' && e.target.tagName === 'BUTTON') e.preventDefault(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && rolling) stop(); });
+
+applySettings(); render(); progress();
+</script>
