@@ -27,6 +27,7 @@
 - `profile.md` — шапки профиля для всех площадок (цель: популярность + заказы на музыку)
 - `teleprompter.html` — телесуфлёр с текстом вступления (опубликован: https://claude.ai/artifact/2fbyCRYXYBByyCayjwU2QQ)
 - `teleprompter-ai-ads.html` — телесуфлёр «Чем вредна реклама, созданная ИИ» (https://claude.ai/artifact/GYLwWw8Wd5CnDnv7crGfKN)
+- `plan-ai-ads.html` — план того же ролика на одном экране планшета (https://claude.ai/artifact/BnWwGgABcjF6hS1ixzcniz)
 - `author.md` — собственные мысли и формулировки автора (первоисточник); дополнять после интервью
 
 ## Правила работы
