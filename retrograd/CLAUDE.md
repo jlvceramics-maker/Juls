@@ -28,6 +28,7 @@
 - `teleprompter.html` — телесуфлёр с текстом вступления (опубликован: https://claude.ai/artifact/2fbyCRYXYBByyCayjwU2QQ)
 - `teleprompter-ai-ads.html` — телесуфлёр «Чем вредна реклама, созданная ИИ» (https://claude.ai/artifact/GYLwWw8Wd5CnDnv7crGfKN)
 - `plan-ai-ads.html` — план того же ролика на одном экране планшета (https://claude.ai/artifact/BnWwGgABcjF6hS1ixzcniz)
+- Финальное вступление (4K-исходник, фото, наезды): https://claude.ai/artifact/GmqqNCg4pzN4bLLkjUAdGi; сборка — `video/render_final.py`
 - `author.md` — собственные мысли и формулировки автора (первоисточник); дополнять после интервью
 
 ## Правила работы
