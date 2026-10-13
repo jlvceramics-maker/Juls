@@ -91,8 +91,8 @@ PHOTOS = [
     dict(s=27.1, e=33.4, path=IMGDIR + '/6.jpg'),  # первый поезд
 ]
 ZOOMS = [
-    dict(s=35.55, e=36.9, z=1.22),   # «символично»
-    dict(s=62.25, e=64.8, z=1.28),   # «возможность любить»
+    dict(s=35.45, e=36.8, z=1.22),   # «символично»
+    dict(s=62.1, e=64.65, z=1.28),   # «возможность любить»
 ]
 FX, FY = 0.47, 0.34                  # центр лица в кадре
 if MODE == 'bottom':
@@ -143,10 +143,10 @@ def fade(im, a):
         return im
     im = im.copy(); im.putalpha(im.getchannel('A').point(lambda v: int(v * a))); return im
 
-dec = subprocess.Popen(['ffmpeg', '-v', 'error', '-i', SRC, '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], stdout=subprocess.PIPE)
+dec = subprocess.Popen(['ffmpeg', '-v', 'error', '-i', SRC, '-vf', 'scale=in_color_matrix=bt709:in_range=tv:out_range=full,format=rgb24', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], stdout=subprocess.PIPE)
 enc = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}',
-                        '-r', str(FPS), '-i', '-', '-i', SRC, '-map', '0:v', '-map', '1:a', '-c:v', 'libx264',
-                        '-preset', 'slow', '-crf', '20', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k',
+                        '-r', str(FPS), '-i', '-', '-i', SRC, '-map', '0:v', '-map', '1:a', '-vf', 'scale=out_color_matrix=bt709:out_range=tv:in_range=full,format=yuv420p', '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv', '-c:v', 'libx264',
+                        '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k',
                         '-movflags', '+faststart', '-shortest', OUT], stdin=subprocess.PIPE)
 n = 0
 while True:
