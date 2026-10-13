@@ -56,7 +56,7 @@ for i, ch in enumerate(chunks):
     toks = [re.sub(r'[.,:;«»"]', '', x['t']).upper() for x in ch]
     caps.append({'s': s, 'e': e, 'toks': [t for t in toks if t]})
 
-font = ImageFont.truetype(INTER, 66)
+font = ImageFont.truetype(INTER, 48)
 PILL = (59, 36, 23)          # тёмно-коричневая подложка
 GOLD = (244, 197, 110)
 
@@ -65,15 +65,15 @@ def caption_img(toks):
     widths = [font.getlength(t) for t in toks]
     tw = sum(widths) + space * (len(toks) - 1)
     asc, desc = font.getmetrics()
-    padx, pady = 26, 14
+    padx, pady = 19, 10
     cap_h = font.getbbox('ЖЁ')[3] - font.getbbox('Ж')[1]
     box_w, box_h = int(tw + 2 * padx), int(cap_h + 2 * pady + 6)
     im = Image.new('RGBA', (box_w + 40, box_h + 40), (0, 0, 0, 0))
     sh = Image.new('RGBA', im.size, (0, 0, 0, 0))
-    ImageDraw.Draw(sh).rounded_rectangle((20, 24, 20 + box_w, 24 + box_h), 22, fill=(0, 0, 0, 90))
+    ImageDraw.Draw(sh).rounded_rectangle((20, 24, 20 + box_w, 24 + box_h), 16, fill=(0, 0, 0, 90))
     im = Image.alpha_composite(im, sh.filter(ImageFilter.GaussianBlur(8)))
     d = ImageDraw.Draw(im)
-    d.rounded_rectangle((20, 20, 20 + box_w, 20 + box_h), 22, fill=PILL + (238,))
+    d.rounded_rectangle((20, 20, 20 + box_w, 20 + box_h), 16, fill=PILL + (238,))
     x = 20 + padx
     top = 20 + pady - font.getbbox('Ж')[1] + 2
     for t, wd in zip(toks, widths):

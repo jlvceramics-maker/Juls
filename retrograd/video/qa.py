@@ -32,7 +32,7 @@ if unexpected: print('   (проверить глазами:', unexpected[:12], 
 subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', V, '-ac', '1', '-ar', '48000', '/tmp/qa.wav'])
 w = wave.open('/tmp/qa.wav'); x = np.frombuffer(w.readframes(w.getnframes()), np.int16).astype(np.float32) / 32768
 jumps = np.abs(np.diff(x)); thr = max(0.25, float(np.percentile(jumps, 99.99)) * 1.5)
-pops = [round(i / 48000, 2) for i in np.where(jumps > thr)[0]]
+pops = [round(i / 48000, 2) for i in np.where(jumps > thr)[0] if not near(i / 48000, PHOTO, 0.15)]   # щелчки SFX на фото — задуманы
 print(f"4. Звук: пик {np.abs(x).max():.2f}, щелчки-обрывы: {len(pops)}")
 if np.abs(x).max() > 0.99: bad('звук перегружен (клиппинг)')
 if pops: bad(f'резкие скачки звука на {pops[:10]}')
