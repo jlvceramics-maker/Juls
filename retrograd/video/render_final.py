@@ -91,10 +91,11 @@ PHOTOS = [
     dict(s=26.9, e=33.0, path=IMGDIR + '/6.jpg'),  # первый поезд
 ]
 ZOOMS = [
-    dict(s=35.25, e=36.6, z=1.22),   # «символично»
-    dict(s=61.3, e=63.85, z=1.28),   # «возможность любить»
+    dict(s=35.15, e=36.6, z=1.18),   # «символично»
+    dict(s=61.2, e=63.85, z=1.22),   # «возможность любить»
 ]
-FX, FY = 0.47, 0.34                  # центр лица в кадре
+FX, FY = 0.47, 0.34
+IN_T, OUT_T = 0.35, 0.8                # въезд 0.35 с, плавный отъезд 0.8 с                  # центр лица в кадре
 if MODE == 'bottom':
     BOX = (40, int(H * 0.53), W - 40, int(H * 0.91))   # нижняя половина, выше интерфейса Instagram
     CAP_PHOTO_Y = int(H * 0.485)
@@ -155,12 +156,15 @@ while True:
     t = n / FPS
     img = Image.frombytes('RGB', (W, H), buf)
     for zm in ZOOMS:
-        if zm['s'] <= t < zm['e']:
-            k = min(1.0, (t - zm['s']) * FPS / 4); k = 1 - (1 - k) ** 3
+        if zm['s'] <= t < zm['e'] + OUT_T:
+            sm = lambda x: x * x * (3 - 2 * x)                       # плавный разгон и торможение
+            k_in = sm(min(1.0, (t - zm['s']) / IN_T))
+            k_out = sm(min(1.0, max(0.0, (zm['e'] + OUT_T - t) / OUT_T)))
+            k = min(k_in, k_out)
             z = 1 + (zm['z'] - 1) * k
             cw, ch = W / z, H / z
             cx = min(max(FX * W, cw / 2), W - cw / 2); cy = min(max(FY * H, ch / 2), H - ch / 2)
-            img = img.crop((int(cx - cw / 2), int(cy - ch / 2), int(cx + cw / 2), int(cy + ch / 2))).resize((W, H), Image.LANCZOS)
+            img = img.resize((W, H), Image.BICUBIC, box=(cx - cw / 2, cy - ch / 2, cx + cw / 2, cy + ch / 2))  # субпиксельно, без дрожания
     img = img.convert('RGBA')
     photo_on = False
     for p in PHOTOS:
