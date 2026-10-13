@@ -91,9 +91,11 @@ PHOTOS = [
     dict(s=26.9, e=33.0, path=IMGDIR + '/6.jpg'),  # первый поезд
 ]
 ZOOMS = [
-    dict(s=35.3, e=None, z=1.15),   # «символично»
-    dict(s=61.72, e=None, z=1.3),   # «возможность любить»
+    dict(s=35.3, word_end=35.88, z=1.2),   # «символично»
+    dict(s=61.72, word_end=63.24, z=1.25),   # «возможность любить»
 ]
+for zm in ZOOMS:   # возврат к общему плану прячем в момент смены субтитра на новую фразу
+    zm['e'] = min(c['s'] for c in caps if c['s'] >= zm['word_end'] - 0.05)
 FX, FY = 0.47, 0.34
 IN_T, OUT_T = 0.35, 0.8                # въезд 0.35 с, плавный отъезд 0.8 с                  # центр лица в кадре
 if MODE == 'bottom':
@@ -156,8 +158,8 @@ while True:
     t = n / FPS
     img = Image.frombytes('RGB', (W, H), buf)
     z = 1.0
-    for zm in ZOOMS:                      # резкий «наезд» в один кадр, без отъезда назад
-        if t >= zm['s']:
+    for zm in ZOOMS:                      # резкий «наезд» в один кадр; возврат — склейкой на новой фразе
+        if zm['s'] <= t < zm['e']:
             z = zm['z']
     if z > 1.0:
         cw, ch = W / z, H / z
