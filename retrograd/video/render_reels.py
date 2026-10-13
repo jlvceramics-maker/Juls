@@ -94,8 +94,8 @@ SEGS = json.load(open(SRC + '.segs.json'))   # план меняется тол�
 FX, FY = 0.47, 0.34
 IN_T, OUT_T = 0.35, 0.8                # въезд 0.35 с, плавный отъезд 0.8 с                  # центр лица в кадре
 if MODE == 'bottom':
-    BOX = (40, int(H * 0.53), W - 40, int(H * 0.91))   # нижняя половина, выше интерфейса Instagram
-    CAP_PHOTO_Y = int(H * 0.485)
+    BOX = (70, int(H * 0.565), W - 70, int(H * 0.905))   # нижняя половина, выше интерфейса Instagram
+    CAP_PHOTO_Y = int(H * 0.525)
 else:
     BOX = (70, int(H * 0.22), W - 70, int(H * 0.66))   # по центру
     CAP_PHOTO_Y = int(H * 0.74)
