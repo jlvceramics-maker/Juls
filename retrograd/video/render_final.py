@@ -10,7 +10,7 @@ PF = FONTS + '/playfair-display-{sub}-{w}-normal.woff'
 # ---------- captions ----------
 FIX = {'утешителей,': 'Утешитель,', 'святой': 'Святой', 'дух': 'Дух', 'троицы.': 'Троицы.',
        'парельцам': 'по рельсам', 'унес': 'унёс', 'сладче,': 'слаще,', 'сладче': 'слаще,', 'постась': 'ипостась',
-       'парель': 'по рельсам', 'индустриальной': 'индустриальная', 'революции': 'революция', 'от': 'а'}
+       'парель': 'по рельсам', 'парельством,': 'по рельсам,', 'зелени.': 'зеленее.', 'Идолу.': 'идолу.', 'индустриальной': 'индустриальная', 'революции': 'революция', 'от': 'а'}
 ACCENT = {'КОМФОРТ', 'КОМФОРТОМ', 'КОМФОРТУ', 'ИДОЛУ', 'СИМВОЛИЧНО', 'РОБОТА', 'ЛЮБИТЬ',
           'УТЕШИТЕЛЬ', 'СВЯТОЙ', 'ДУХ'}
 
@@ -87,12 +87,12 @@ for c in caps:
 # ---------- photos + punch-in zooms ----------
 IMGDIR = '/tmp/claude-0/-home-user-Juls/7d14dc2a-5247-5de2-a64d-0d6d0bac923d/images'
 PHOTOS = [
-    dict(s=3.5, e=9.2, path=IMGDIR + '/5.jpg'),    # Святой Дух — Пятидесятница
-    dict(s=27.1, e=33.4, path=IMGDIR + '/6.jpg'),  # первый поезд
+    dict(s=3.5, e=9.0, path=IMGDIR + '/5.jpg'),    # Святой Дух — Пятидесятница
+    dict(s=26.9, e=33.0, path=IMGDIR + '/6.jpg'),  # первый поезд
 ]
 ZOOMS = [
-    dict(s=35.45, e=36.8, z=1.22),   # «символично»
-    dict(s=62.1, e=64.65, z=1.28),   # «возможность любить»
+    dict(s=35.25, e=36.6, z=1.22),   # «символично»
+    dict(s=61.3, e=63.85, z=1.28),   # «возможность любить»
 ]
 FX, FY = 0.47, 0.34                  # центр лица в кадре
 if MODE == 'bottom':
@@ -103,7 +103,7 @@ else:
     CAP_PHOTO_Y = int(H * 0.74)
 CAP_Y = int(H * 0.68)
 FADE = 0.35
-R = 30
+R = 0
 
 def prep_photo(p):
     im = Image.open(p['path']).convert('RGB')
@@ -134,7 +134,6 @@ def photo_layer(p, t):
     cw, ch = min(cw, bw), min(ch, bh)
     crop = p['big'].crop((int((bw - cw) / 2), int((bh - ch) / 2), int((bw + cw) / 2), int((bh + ch) / 2))).resize((p['w'], p['h']), Image.LANCZOS)
     card = Image.new('RGBA', (p['w'], p['h']), (0, 0, 0, 0)); card.paste(crop, (0, 0), p['mask'])
-    ImageDraw.Draw(card).rounded_rectangle((1, 1, p['w'] - 2, p['h'] - 2), R, outline=(226, 186, 110, 255), width=4)
     dy = int((1 - ease) * 50)
     return card, a, p['x'], p['y'] + dy
 
@@ -168,7 +167,6 @@ while True:
         if p['s'] <= t < p['e']:
             photo_on = True
             card, a, x, y = photo_layer(p, t)
-            img.alpha_composite(fade(p['shadow'], a), (x - 40, y - 40))
             img.alpha_composite(fade(card, a), (x, y))
     cy_cap = CAP_PHOTO_Y if photo_on else CAP_Y
     for c in caps:
