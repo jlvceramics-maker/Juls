@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Монтажерский пак</title>
+<style>
+@font-face { font-family: ReelSub; src: url("02 Субтитры/ReelSub.ttf"); }
+@font-face { font-family: InterTightV; src: url("04 Шрифты/InterTight[wght].ttf"); font-weight: 100 900; }
+:root { --bg:#FAFAF8; --ink:#111111; --muted:#7A807D; --line:#E5E5E5; --card:#FFFFFF; --lime:#C8F04C; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 InterTightV, -apple-system, system-ui, sans-serif; }
+main { max-width:1180px; margin:0 auto; padding:48px 16px 96px; }
+h1 { font-weight:900; font-size:44px; letter-spacing:-0.02em; margin:0 0 6px; }
+h2 { font-weight:800; font-size:22px; margin:64px 0 6px; padding-top:20px; border-top:1px solid var(--line); }
+h2 span { color:var(--muted); font-weight:500; margin-right:8px; }
+p.lead, p.note { color:var(--muted); margin:0 0 20px; max-width:720px; }
+code { font:13px "JetBrains Mono", ui-monospace, monospace; background:#EFEFEC; padding:1px 5px; }
+nav { display:flex; flex-wrap:wrap; gap:6px 14px; margin:20px 0 0; font-size:14px; }
+nav a { color:var(--ink); text-decoration:none; border-bottom:1px solid var(--line); }
+.grid { display:grid; gap:14px; }
+.bg4 { grid-template-columns:repeat(4, 1fr); }
+.tile { background:var(--card); border:1px solid var(--line); }
+.tile video, .tile img { display:block; width:100%; }
+.bg4 video, .examples video { aspect-ratio:9/16; object-fit:cover; background:#222; }
+.tile .cap { padding:8px 10px; font-size:13px; display:flex; justify-content:space-between; gap:8px; }
+.tile .cap b { font-weight:700; } .tile .cap i { color:var(--muted); font-style:normal; }
+.subdemo { position:relative; aspect-ratio:9/16; width:300px; max-width:100%; flex:none; background:#3a3d3b url("01 Фоны/превью/contour-dark-loop.jpg") center/cover; overflow:hidden; }
+.subdemo .t { position:absolute; left:0; right:0; bottom:13.5%; text-align:center; font-family:ReelSub; font-size:20px; color:#fff; text-transform:uppercase;
+  -webkit-text-stroke:1.3px #000; paint-order:stroke fill; text-shadow:0 1px 3px rgba(0,0,0,.5); }
+.subdemo .t em { font-style:normal; color:#FFF4A3; }
+.subrow { display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; }
+.specs { flex:1; min-width:260px; }
+table { border-collapse:collapse; width:100%; font-size:14px; }
+td, th { text-align:left; padding:7px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { font-weight:700; color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+.sw { display:inline-block; width:14px; height:14px; border:1px solid rgba(0,0,0,.15); vertical-align:-2px; margin-right:6px; }
+.titles { grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); }
+.mock { aspect-ratio:9/16; background:#2b2e2c; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding-top:22%; gap:14px; text-align:center; }
+.mock .icons { display:flex; align-items:center; gap:10px; }
+.mock .ic { font:900 22px ReelSub, sans-serif; color:#111; width:52px; height:52px; background:#fff; border-radius:14px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(0,0,0,.35); }
+.mock .ic.round { width:84px; height:84px; border-radius:50%; }
+.mock .ic img { width:60%; }
+.mock .plus { color:#fff; font-weight:900; font-size:22px; }
+.mock .ttl { color:#fff; font-family:ReelSub; font-size:24px; line-height:1.05; text-shadow:0 2px 8px rgba(0,0,0,.4); }
+.mock .ttl em { font-style:normal; color:#C8F04C; }
+.mock .sub2 { color:#fff; font:500 12px "Helvetica Neue", sans-serif; opacity:.9; }
+.mock .ttl2 { color:#fff; font:700 22px "Helvetica Neue", sans-serif; margin-top:-8px; text-shadow:0 2px 8px rgba(0,0,0,.4); }
+.logos { grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); }
+.logos .tile { padding:14px 8px 8px; text-align:center; font-size:12px; color:var(--muted); }
+.logos img { width:36px; height:36px; margin:0 auto 6px; }
+.sfx { grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); }
+.sfx .tile { padding:10px; font-size:13px; }
+.sfx audio { width:100%; height:32px; margin-top:6px; }
+.examples { grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); }
+.rules { columns:2; column-gap:40px; }
+.rules li { break-inside:avoid; margin-bottom:6px; }
+@media (max-width:760px) {
+  h1 { font-size:32px; }
+  .bg4 { grid-template-columns:repeat(2, 1fr); }
+  .bg4 .cap i { display:none; }
+  .rules { columns:1; }
+  table { font-size:13px; }
+  .tablewrap { overflow-x:auto; }
+}
+</style>
+</head>
+<body>
+<main>
+  <h1>Монтажерский пак</h1>
+  <p class="lead">Фоны, субтитры, заголовки, шрифты, звуки и правила для вертикальных роликов 1080×1920. Команды и подробности — в <code>README.md</code>.</p>
+  <nav>
+    <a href="#bg">Фоны</a><a href="#subs">Субтитры</a><a href="#titles">Заголовки</a><a href="#palette">Палитры</a>
+    <a href="#motion">Движение и монтаж</a><a href="#sfx">Звуки</a>
+  </nav>
+
+  <h2 id="bg"><span>01</span>Фоны для b-roll</h2>
+  <p class="note">1080×1920, 20 с, 30 fps, бесшовный луп, без звука. Генератор в <code>01 Фоны/генератор bg-lab/</code>.</p>
+  <div class="grid bg4" id="bgGrid"></div>
+
+  <h2 id="subs"><span>02</span>Субтитры — караоке</h2>
+  <div class="subrow">
+    <div class="subdemo"><div class="t">ЭТО <em>ДЕЛАЕТ</em> CLAUDE</div></div>
+    <div class="specs tablewrap"><table>
+      <tr><th>Параметр</th><th>Значение</th></tr>
+      <tr><td>Шрифт</td><td>ReelSub (Inter Tight 900), 78 px, капс</td></tr>
+      <tr><td>Цвет</td><td><span class="sw" style="background:#fff"></span>белый, активное слово <span class="sw" style="background:#FFF4A3"></span>#FFF4A3</td></tr>
+      <tr><td>Обводка / тень</td><td>чёрная 5 px / 2</td></tr>
+      <tr><td>Строка</td><td>до 3 слов и 17 знаков, без висящих слов</td></tr>
+      <tr><td>Позиция</td><td>MarginV 260, y около 1660 из 1920</td></tr>
+      <tr><td>Скрипт</td><td><code>02 Субтитры/build.py</code></td></tr>
+    </table></div>
+  </div>
+
+  <h2 id="titles"><span>03</span>Заголовки и плашки</h2>
+  <p class="note">Шапка на хуке: y около 250, не ниже 500, появляется на кадре 0, гаснет к концу хука. Без плашек, мягкая тень. Ниже — схема, PNG рисуют скрипты.</p>
+  <div class="grid titles">
+    <div class="tile"><div class="mock"><div class="icons"><span class="ic">A</span><span class="plus">+</span><span class="ic">B</span></div><div class="ttl">ЗАГОЛОВОК<br>В <em>ДВЕ</em> СТРОКИ</div></div><div class="cap"><b>title.mjs</b><i>плитки + заголовок</i></div></div>
+    <div class="tile"><div class="mock"><div class="sub2">подводка сверху</div><div class="ttl2">Крупный заголовок</div></div><div class="cap"><b>title2.mjs</b><i>без иконок</i></div></div>
+    <div class="tile"><div class="mock"><div class="icons"><span class="ic round">A</span></div></div><div class="cap"><b>badge.mjs</b><i>круглый знак</i></div></div>
+  </div>
+
+  <h2 id="palette"><span>—</span>Палитры</h2>
+  <div class="tablewrap"><table>
+    <tr><th>Набор</th><th>Фон</th><th>Текст</th><th>Акцент</th><th>Прочее</th></tr>
+        <tr><td>Лайм светлый</td><td><span class="sw" style="background:#FAFAF8"></span>#FAFAF8 + сетка</td><td><span class="sw" style="background:#0E1110"></span>#0E1110</td><td><span class="sw" style="background:#C8F04C"></span>#C8F04C</td><td><span class="sw" style="background:#5F7D00"></span>лайм-текст #5F7D00 · <span class="sw" style="background:#7A807D"></span>#7A807D</td></tr>
+    <tr><td>Лайм серый</td><td><span class="sw" style="background:#EEEEEE"></span>#EEEEEE</td><td><span class="sw" style="background:#111111"></span>#111111</td><td><span class="sw" style="background:#C8F04C"></span>#C8F04C</td><td>карточка #FFFFFF</td></tr>
+    <tr><td>Ночь</td><td><span class="sw" style="background:#121212"></span>#121212</td><td><span class="sw" style="background:#F5F5F5"></span>#F5F5F5</td><td><span class="sw" style="background:#C8F04C"></span>#C8F04C</td><td>карточка #1E1E1E</td></tr>
+    <tr><td>Белый строгий</td><td><span class="sw" style="background:#F4F4F2"></span>#F4F4F2</td><td><span class="sw" style="background:#111111"></span>#111111</td><td><span class="sw" style="background:#111111"></span>#111111</td><td>карточка #FFFFFF</td></tr>
+    <tr><td>Бумага</td><td><span class="sw" style="background:#F2EDE4"></span>#F2EDE4</td><td><span class="sw" style="background:#1E130F"></span>#1E130F</td><td><span class="sw" style="background:#E0A33C"></span>#E0A33C</td><td>карточка #FFFDF8</td></tr>
+  </table></div>
+
+  <h2 id="motion"><span>—</span>Движение и монтаж</h2>
+  <ul class="rules">
+    <li>Появление слова: блюр 14 px, подъём 40 px, 16 кадров, cubic-bezier(0.16, 1, 0.3, 1).</li>
+    <li>Кривые: OUT (0.16, 1, 0.3, 1), IN (0.7, 0, 0.84, 0), INOUT (0.65, 0, 0.35, 1), 30 fps.</li>
+    <li>Резать только паузы от 0.5 с, оставлять около 0.35 с. Нет длинных пауз — не резать.</li>
+    <li>Без цветкора и виньетки, картинка как из камеры.</li>
+    <li>loudnorm I=-14, TP=-1.5. Вставки с телефона около -27 LUFS выравнивать.</li>
+    <li>Перед concat ставить <code>setsar=1</code>.</li>
+    <li>Экспорт: мастер crf 16, отправка crf 23.</li>
+    <li>Хук на кадре 0: крупный текст уже на экране.</li>
+    <li>Два заголовка в блюре одновременно — брак. Сетка фона одна на ролик.</li>
+    <li>Логотипы сервисов брать готовыми SVG, руками не рисовать.</li>
+    <li>Звук на событие: pop, tick, shine, boom, whoosh.</li>
+    <li>Проверка: лист кадров из mp4 до отправки.</li>
+  </ul>
+
+
+
+  <h2 id="sfx"><span>05</span>Звуки</h2>
+  <div class="grid sfx" id="sfxGrid"></div>
+
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const bgs = [["blueprint","миллиметровка"],["contour","изолинии"],["diagonal","косая сетка"],["dots","точки"]];
+let h = "";
+for (const pal of ["dark","light"]) for (const [s, ru] of bgs) {
+  const f = `${s}-${pal}-loop`;
+  h += `<div class="tile"><video src="01 Фоны/${f}.mp4" poster="01 Фоны/превью/${f}.jpg" muted loop playsinline preload="none"
+    onmouseenter="this.play()" onmouseleave="this.pause()" onclick="this.paused?this.play():this.pause()"></video>
+    <div class="cap"><b>${s}-${pal}</b><i>${ru}</i></div></div>`;
+}
+$("bgGrid").innerHTML = h;
+const sfx = [["синтез","pop.wav"],["синтез","tick.wav"],["синтез","shine.wav"],["синтез","boom.wav"],["синтез","whoosh.wav"],["синтез","key.wav"],["синтез","typing.wav"]];
+$("sfxGrid").innerHTML = sfx.map(([d,f]) => `<div class="tile"><b>${f}</b> <span style="color:var(--muted)">${d}</span><audio controls preload="none" src="05 Звуки/${d}/${f}"></audio></div>`).join("");
+</script>
+</body>
+</html>

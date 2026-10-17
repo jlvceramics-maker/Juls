@@ -1,0 +1,50 @@
+{
+  "title_line1": "Первая строка заголовка",
+  "title_line2": "вторая с [акцентом]",
+  "ad_label": "",
+  "pause_max": 0.5,
+  "title_max_sec": 6.0,
+  "broll": {
+    "phone": {
+      "triggers": [
+        "вот так",
+        "смотри"
+      ],
+      "in": 0.0,
+      "min_start": 2.5,
+      "fit": true
+    },
+    "desktop_prompt": {
+      "triggers": [
+        "заходим",
+        "открываем"
+      ],
+      "in": 0.0,
+      "min_gap": 4.0
+    },
+    "desktop_answer": {
+      "triggers": [
+        "ответ",
+        "готово"
+      ],
+      "in": 9.0,
+      "min_gap": 2.0
+    }
+  },
+  "cta_triggers": [
+    "напиши",
+    "комментар"
+  ],
+  "fixes": [
+    [
+      "^[Кк]лод[а-я]*$",
+      "Claude"
+    ],
+    [
+      "[Тт]елеграмм?[а-я]*",
+      "Telegram"
+    ]
+  ],
+  "cta_line1": "Пиши в комментариях",
+  "cta_line2": "слово [«КОДОВОЕ»]"
+}

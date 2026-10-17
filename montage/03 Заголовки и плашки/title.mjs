@@ -1,0 +1,33 @@
+// title.mjs <icons.png> <title.png> "<line1 with [accent]>" "<line2>"
+// Tiles Claude (+ optional second tile), title Inter Tight 900, white + lime accent.
+// Run from a folder with playwright-core installed (npm i playwright-core).
+import { chromium } from "playwright-core";
+import { readFileSync } from "fs";
+const [iconsOut, titleOut, l1, l2, extra] = process.argv.slice(2);
+const font = readFileSync(new URL("../edit/fonts/ReelSub.ttf", import.meta.url)).toString("base64");
+const esc = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const acc = (t) => esc(t).replace(/\[(.+?)\]/g, '<span style="color:#c8f04c">$1</span>');
+const tile = (inner) => `<div class="tile">${inner}</div>`;
+const claude = tile(`<svg width="128" height="128" viewBox="0 0 24 24"><path d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z" fill="#D97757"/></svg>`);
+const github = tile(`<svg width="128" height="128" viewBox="0 0 16 16"><path fill="#111" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>`);
+const obsidian = tile(`<svg width="124" height="124" viewBox="0 0 24 24"><path fill="#7C3AED" d="M19.355 18.538a68.967 68.959 0 0 0 1.858-2.954.81.81 0 0 0-.062-.9c-.516-.685-1.504-2.075-2.042-3.362-.553-1.321-.636-3.375-.64-4.377a1.707 1.707 0 0 0-.358-1.05l-3.198-4.064a3.744 3.744 0 0 1-.076.543c-.106.503-.307 1.004-.536 1.5-.134.29-.29.6-.446.914l-.31.626c-.516 1.068-.997 2.227-1.132 3.59-.124 1.26.046 2.73.815 4.481.128.011.257.025.386.044a6.363 6.363 0 0 1 3.326 1.505c.916.79 1.744 1.922 2.415 3.5zM8.199 22.569c.073.012.146.02.22.02.78.024 2.095.092 3.16.29.87.16 2.593.64 4.01 1.055 1.083.316 2.198-.548 2.355-1.664.114-.814.33-1.735.725-2.58l-.01.005c-.67-1.87-1.522-3.078-2.416-3.849a5.295 5.295 0 0 0-2.778-1.257c-1.54-.216-2.952.19-3.84.45.532 2.218.368 4.829-1.425 7.531zM5.533 9.938c-.023.1-.056.197-.098.29L2.82 16.059a1.602 1.602 0 0 0 .313 1.772l4.116 4.24c2.103-3.101 1.796-6.02.836-8.3-.728-1.73-1.832-3.081-2.55-3.831zM9.32 14.01c.615-.183 1.606-.465 2.745-.534-.683-1.725-.848-3.233-.716-4.577.154-1.552.7-2.847 1.235-3.95.113-.235.223-.454.328-.664.149-.297.288-.577.419-.86.217-.47.379-.885.46-1.27.08-.38.08-.72-.014-1.043-.095-.325-.297-.675-.68-1.06a1.6 1.6 0 0 0-1.475.36l-4.95 4.452a1.602 1.602 0 0 0-.513.952l-.427 2.83c.672.59 2.328 2.316 3.335 4.711.09.21.175.43.253.653z"/></svg>`);
+const css = `@font-face{font-family:RS;src:url(data:font/ttf;base64,${font})}
+html,body{margin:0;background:transparent}
+.tile{width:190px;height:190px;border-radius:44px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 34px rgba(0,0,0,.28)}
+.icons{display:inline-flex;align-items:center;gap:34px;padding:40px}
+.plus{font-family:RS;font-size:76px;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.35);line-height:1;margin-top:-6px}
+.wrap{position:absolute;left:40px;width:1000px;top:360px;text-align:center;font-family:RS;color:#fff;letter-spacing:-0.035em;line-height:1.02}
+.l{white-space:nowrap;display:inline-block;font-size:112px;text-transform:uppercase;text-shadow:0 3px 6px rgba(0,0,0,.3),0 6px 30px rgba(0,0,0,.35)}`;
+const b = await chromium.launch({ channel: "chrome", headless: true });
+let p = await b.newPage({ viewport: { width: 600, height: 300 } });
+await p.setContent(`<html><head><style>${css}</style></head><body><div class="icons" id="i">${claude}${extra === "obsidian" ? `<div class="plus">+</div>${obsidian}` : ""}</div></body></html>`);
+await p.evaluate(() => document.fonts.ready);
+const box = await (await p.$("#i")).boundingBox();
+await p.screenshot({ path: iconsOut, omitBackground: true, clip: box });
+p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
+await p.setContent(`<html><head><style>${css}</style></head><body><div class="wrap"><div class="l">${acc(l1)}</div><br><div class="l">${acc(l2)}</div></div></body></html>`);
+await p.evaluate(() => document.fonts.ready);
+const px = await p.evaluate(() => { const ls = [...document.querySelectorAll(".l")]; let s = 112;
+  while (ls.some((l) => l.getBoundingClientRect().width > 980) && s > 60) { s -= 2; ls.forEach((l) => (l.style.fontSize = s + "px")); } return s; });
+await p.screenshot({ path: titleOut, omitBackground: true }); await b.close();
+console.log(titleOut.split("/").pop(), px + "px", Math.round(box.width) + "x" + Math.round(box.height));

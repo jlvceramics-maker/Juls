@@ -1,0 +1,9 @@
+.DS_Store
+__pycache__/
+node_modules/
+out/
+# не публикуются: коммерческие или неизвестной лицензии
+04 Шрифты/MartinaScriptC.ttf
+04 Шрифты/Radius-capcut.ttf
+04 Шрифты/radius-latin-only.ttf
+05 Звуки/showreel/

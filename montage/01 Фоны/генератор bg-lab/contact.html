@@ -1,0 +1,30 @@
+<meta charset="utf-8">
+<style>
+  body { margin:0; background:#1a1a1a; font:12px/1.4 -apple-system,Inter,sans-serif; color:#eee; }
+  .grid { display:grid; grid-template-columns:repeat(6,190px); gap:14px; padding:20px; }
+  .cell canvas { display:block; width:190px; height:338px; }
+  .cap { padding-top:7px; }
+  .cap b { color:#fff; font-weight:600; }
+  .cap span { color:#8d8d8d; }
+</style>
+<div class="grid" id="g"></div>
+<script type="module">
+  import { createRenderer } from './gl.js';
+  import { PALETTES, STYLE_NAMES } from './palettes.js';
+  const g = document.getElementById('g');
+  for (const mode of ['dark', 'light']) {
+    Object.keys(STYLE_NAMES).forEach(key => {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      const c = document.createElement('canvas');
+      c.width = 380; c.height = 676;
+      cell.appendChild(c);
+      const cap = document.createElement('div');
+      cap.className = 'cap';
+      cap.innerHTML = `<b>${STYLE_NAMES[key]}</b> <span>${mode}</span>`;
+      cell.appendChild(cap);
+      g.appendChild(cell);
+      createRenderer(c, key, PALETTES[key][mode])(Math.PI * 0.6);
+    });
+  }
+</script>
