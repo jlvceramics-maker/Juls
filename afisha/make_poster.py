@@ -16,15 +16,36 @@ GRAY = (179, 179, 179)
 SCALE = W / 1500          # фото 1500x1000 -> 1920x1280
 OFFSET_Y = 190            # обрезаем сверху, чтобы внизу осталось место под текст
 
-# контур пары в координатах афиши 1920x1080
-COUPLE = [
-    (875, 290), (900, 278), (927, 288), (932, 320), (950, 322), (975, 318), (982, 298),
-    (1002, 282), (1028, 275), (1052, 284), (1067, 310), (1062, 346), (1046, 362), (1080,
-    378), (1094, 420), (1098, 475), (1078, 498), (1052, 515), (1040, 560), (1036, 630),
-    (1028, 690), (1026, 780), (1026, 860), (1020, 910), (988, 932), (920, 928), (860,
-    948), (780, 954), (680, 914), (618, 864), (558, 794), (522, 754), (518, 728), (560,
-    702), (650, 658), (740, 603), (810, 558), (852, 510), (852, 465), (860, 410), (866,
-    378), (880, 358)]
+BLUR = 7                  # радиус размытия фона: лёгкое, но заметное
+
+# пару вырезает нейросеть rembg (isnet-general-use) на кропе вокруг неё;
+# танцоров за спиной кавалера отрезаем по линии его спины (координаты кропа)
+CROP = (370, 330, 910, 920)
+CUT_RIGHT = [(455, 0), (462, 110), (458, 150), (452, 200), (452, 240), (440, 270),
+             (428, 300), (420, 360), (420, 560), (432, 590)]
+# просвет пола между платьем и ногой кавалера — тоже фон
+GAP = [(349, 364), (356, 380), (359, 420), (362, 500), (357, 518), (330, 520),
+       (320, 500), (321, 450), (333, 405), (344, 378)]
+MASK_FILE = HERE / "couple_mask.png"
+
+
+def couple_mask():
+    """Маска пары на исходном фото 1500x1000 (кэшируется в couple_mask.png)."""
+    if MASK_FILE.exists():
+        return Image.open(MASK_FILE).convert("L")
+    from rembg import remove, new_session
+    src = Image.open(HERE / "photo.jpg").convert("RGB")
+    seg = remove(src.crop(CROP), session=new_session("isnet-general-use"), only_mask=True)
+    w, h = seg.size
+    keep = Image.new("L", (w, h), 0)
+    ImageDraw.Draw(keep).polygon([(0, 0)] + CUT_RIGHT + [(0, h)], fill=255)
+    ImageDraw.Draw(keep).polygon(GAP, fill=0)
+    seg = Image.fromarray(np.minimum(np.asarray(seg), np.asarray(
+        keep.filter(ImageFilter.GaussianBlur(2)))))
+    full = Image.new("L", src.size, 0)
+    full.paste(seg, CROP[:2])
+    full.save(MASK_FILE)
+    return full
 
 
 def photo_layer():
@@ -32,11 +53,10 @@ def photo_layer():
     big = src.resize((W, round(1000 * SCALE)), Image.LANCZOS)
     sharp = big.crop((0, OFFSET_Y, W, OFFSET_Y + H))
 
-    hard = Image.new("L", (W, H), 0)
-    ImageDraw.Draw(hard).polygon(COUPLE, fill=255)
+    hard = couple_mask().resize((W, round(1000 * SCALE)), Image.LANCZOS)
+    hard = hard.crop((0, OFFSET_Y, W, OFFSET_Y + H))
 
-    # размываем фон без пары, иначе вокруг неё светлый ореол от белого платья
-    keep = 1 - np.asarray(hard.filter(ImageFilter.MaxFilter(15)), np.float32) / 255
+    keep = 1 - np.asarray(hard.point(lambda v: 255 if v > 20 else 0).filter(ImageFilter.MaxFilter(9)), np.float32) / 255
     rgb = np.asarray(sharp, np.float32)
     def blur(a, r):
         # три прохода бокс-фильтра ~ гаусс; PIL не размывает float-картинки
@@ -48,11 +68,11 @@ def photo_layer():
                 a = (np.take(c, range(2 * r + 1, c.shape[ax]), axis=ax)
                      - np.take(c, range(0, c.shape[ax] - 2 * r - 1), axis=ax)) / (2 * r + 1)
         return a
-    num = np.dstack([blur(rgb[..., c] * keep, 14) for c in range(3)])
-    den = blur(keep, 14)[..., None]
+    num = np.dstack([blur(rgb[..., c] * keep, BLUR) for c in range(3)])
+    den = blur(keep, BLUR)[..., None]
     blurred = Image.fromarray(np.clip(num / np.maximum(den, 1e-3), 0, 255).astype(np.uint8))
 
-    mask = hard.filter(ImageFilter.GaussianBlur(4))
+    mask = hard.filter(ImageFilter.GaussianBlur(1.2))
     return Image.composite(sharp, blurred, mask)
 
 
