@@ -45,6 +45,9 @@ GAP = [(349, 364), (356, 380), (359, 420), (362, 500), (357, 518), (330, 520),
 FORCE = [(800, 868), (860, 858), (905, 848), (960, 880), (960, 1100), (800, 1100),
          (790, 950)]
 PATCH = [(1040, 900), (1082, 902), (1088, 972), (1042, 976)]   # нашивка на рукаве
+# точный край рукава кавалера: правее — голова и воротник танцора позади
+SLEEVE_CUT = [(1068, 850), (1075, 905), (1072, 960), (1075, 1000), (1078, 1040),
+              (1058, 1080), (1300, 1080), (1300, 850)]
 HI_CROP = (0, 560, 1300, 1990)
 MASK_FILE = HERE / "couple_mask.png"
 
@@ -68,6 +71,7 @@ def couple_mask():
     full.paste(seg, HI_CROP[:2])
     ImageDraw.Draw(full).polygon(FORCE, fill=255)
     ImageDraw.Draw(full).polygon(PATCH, fill=255)
+    ImageDraw.Draw(full).polygon(SLEEVE_CUT, fill=0)
     full.save(MASK_FILE)
     return full
 
