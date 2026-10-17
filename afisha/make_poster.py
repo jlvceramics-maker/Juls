@@ -21,8 +21,8 @@ BLUR = 7                  # радиус размытия фона: лёгкое
 # пару вырезает нейросеть rembg (isnet-general-use) на кропе вокруг неё;
 # танцоров за спиной кавалера отрезаем по линии его спины (координаты кропа)
 CROP = (370, 330, 910, 920)
-CUT_RIGHT = [(455, 0), (462, 110), (458, 150), (452, 200), (452, 240), (440, 270),
-             (428, 300), (420, 360), (420, 560), (432, 590)]
+CUT_RIGHT = [(486, 0), (489, 125), (490, 185), (470, 198), (445, 210), (440, 240),
+             (440, 270), (428, 300), (420, 360), (420, 560), (432, 590)]
 # просвет пола между платьем и ногой кавалера — тоже фон
 GAP = [(349, 364), (356, 380), (359, 420), (362, 500), (357, 518), (330, 520),
        (320, 500), (321, 450), (333, 405), (344, 378)]
@@ -52,6 +52,8 @@ def photo_layer():
     src = Image.open(HERE / "photo.jpg").convert("RGB")
     big = src.resize((W, round(1000 * SCALE)), Image.LANCZOS)
     sharp = big.crop((0, OFFSET_Y, W, OFFSET_Y + H))
+    # фото увеличено в 1.28 раза — возвращаем паре резкость исходника
+    crisp = sharp.filter(ImageFilter.UnsharpMask(radius=1.6, percent=70, threshold=2))
 
     hard = couple_mask().resize((W, round(1000 * SCALE)), Image.LANCZOS)
     hard = hard.crop((0, OFFSET_Y, W, OFFSET_Y + H))
@@ -73,7 +75,7 @@ def photo_layer():
     blurred = Image.fromarray(np.clip(num / np.maximum(den, 1e-3), 0, 255).astype(np.uint8))
 
     mask = hard.filter(ImageFilter.GaussianBlur(1.2))
-    return Image.composite(sharp, blurred, mask)
+    return Image.composite(crisp, blurred, mask)
 
 
 def bottom_shade(img):
