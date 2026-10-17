@@ -18,45 +18,82 @@ OFFSET_Y = 190            # обрезаем сверху, чтобы внизу
 
 BLUR = 7                  # радиус размытия фона: лёгкое, но заметное
 
-# пару вырезает нейросеть rembg (isnet-general-use) на кропе вокруг неё;
-# танцоров за спиной кавалера отрезаем по линии его спины (координаты кропа)
-CROP = (370, 330, 910, 920)
+# Пара берётся с крупного скриншота оригинала (couple_hires.jpg, 1390x2000):
+# в photo.jpg (1500x1000, пришло сжатым через чат) она слишком мелкая.
+# Скриншот -> photo.jpg: подобие без поворота, найдено по SIFT-точкам (OpenCV).
+HI_SCALE, HI_DX, HI_DY = 0.431683, 388.785, 69.845
+
+
+def hi_to_canvas(x, y):
+    return (x * HI_SCALE + HI_DX) * SCALE, (y * HI_SCALE + HI_DY) * SCALE - OFFSET_Y
+
+
+def photo_to_hi(x, y):
+    return (x - HI_DX) / HI_SCALE, (y - HI_DY) / HI_SCALE
+
+
+# пару вырезает нейросеть rembg (isnet-general-use) на кропе скриншота;
+# танцоров за спиной кавалера отрезаем по линии его спины
+# (координаты — кроп photo.jpg с началом в (370, 330))
 CUT_RIGHT = [(486, 0), (489, 125), (490, 185), (470, 198), (445, 210), (440, 240),
              (440, 270), (428, 300), (420, 360), (420, 560), (432, 590)]
 # просвет пола между платьем и ногой кавалера — тоже фон
 GAP = [(349, 364), (356, 380), (359, 420), (362, 500), (357, 518), (330, 520),
        (320, 500), (321, 450), (333, 405), (344, 378)]
+HI_CROP = (0, 560, 1300, 1990)
 MASK_FILE = HERE / "couple_mask.png"
 
 
 def couple_mask():
-    """Маска пары на исходном фото 1500x1000 (кэшируется в couple_mask.png)."""
+    """Маска пары на скриншоте (кэшируется в couple_mask.png)."""
     if MASK_FILE.exists():
         return Image.open(MASK_FILE).convert("L")
     from rembg import remove, new_session
-    src = Image.open(HERE / "photo.jpg").convert("RGB")
-    seg = remove(src.crop(CROP), session=new_session("isnet-general-use"), only_mask=True)
-    w, h = seg.size
-    keep = Image.new("L", (w, h), 0)
-    ImageDraw.Draw(keep).polygon([(0, 0)] + CUT_RIGHT + [(0, h)], fill=255)
-    ImageDraw.Draw(keep).polygon(GAP, fill=0)
+    hi = Image.open(HERE / "couple_hires.jpg").convert("RGB")
+    seg = remove(hi.crop(HI_CROP), session=new_session("isnet-general-use"), only_mask=True)
+    keep = Image.new("L", seg.size, 0)
+    to_crop = lambda pts: [tuple(np.subtract(photo_to_hi(x + 370, y + 330), HI_CROP[:2]))
+                           for x, y in pts]
+    cut = to_crop(CUT_RIGHT)
+    ImageDraw.Draw(keep).polygon([(0, -2000)] + [(cut[0][0], -2000)] + cut + [(0, 3000)], fill=255)
+    ImageDraw.Draw(keep).polygon(to_crop(GAP), fill=0)
     seg = Image.fromarray(np.minimum(np.asarray(seg), np.asarray(
-        keep.filter(ImageFilter.GaussianBlur(2)))))
-    full = Image.new("L", src.size, 0)
-    full.paste(seg, CROP[:2])
+        keep.filter(ImageFilter.GaussianBlur(4)))))
+    full = Image.new("L", hi.size, 0)
+    full.paste(seg, HI_CROP[:2])
     full.save(MASK_FILE)
     return full
+
+
+def place_hires(img):
+    """Скриншот (или его маску) в координаты афиши: уменьшение, а не растяжение."""
+    x0, y0 = hi_to_canvas(0, 0)
+    k = HI_SCALE * SCALE
+    small = img.resize((round(img.width * k), round(img.height * k)), Image.LANCZOS)
+    out = Image.new(img.mode, (W, H), 0)
+    out.paste(small, (round(x0), round(y0)))
+    return out
+
+
+def match_colors(img, ref, mask):
+    """Скриншот светлее и бледнее оригинала: подгоняем каналы линейно по паре."""
+    sel = np.asarray(mask) > 200
+    a, r = np.asarray(img, np.float32), np.asarray(ref, np.float32)
+    out = np.empty_like(a)
+    for c in range(3):
+        k, b = np.polyfit(a[..., c][sel], r[..., c][sel], 1)
+        out[..., c] = a[..., c] * k + b
+    return Image.fromarray(np.clip(out, 0, 255).astype(np.uint8))
 
 
 def photo_layer():
     src = Image.open(HERE / "photo.jpg").convert("RGB")
     big = src.resize((W, round(1000 * SCALE)), Image.LANCZOS)
     sharp = big.crop((0, OFFSET_Y, W, OFFSET_Y + H))
-    # фото увеличено в 1.28 раза — возвращаем паре резкость исходника
-    crisp = sharp.filter(ImageFilter.UnsharpMask(radius=1.6, percent=70, threshold=2))
-
-    hard = couple_mask().resize((W, round(1000 * SCALE)), Image.LANCZOS)
-    hard = hard.crop((0, OFFSET_Y, W, OFFSET_Y + H))
+    couple = place_hires(Image.open(HERE / "couple_hires.jpg").convert("RGB"))
+    hard = place_hires(couple_mask())
+    couple = match_colors(couple, sharp, hard)
+    couple = couple.filter(ImageFilter.UnsharpMask(radius=1.0, percent=45, threshold=3))
 
     keep = 1 - np.asarray(hard.point(lambda v: 255 if v > 20 else 0).filter(ImageFilter.MaxFilter(9)), np.float32) / 255
     rgb = np.asarray(sharp, np.float32)
@@ -74,8 +111,8 @@ def photo_layer():
     den = blur(keep, BLUR)[..., None]
     blurred = Image.fromarray(np.clip(num / np.maximum(den, 1e-3), 0, 255).astype(np.uint8))
 
-    mask = hard.filter(ImageFilter.GaussianBlur(1.2))
-    return Image.composite(crisp, blurred, mask)
+    mask = hard.filter(ImageFilter.GaussianBlur(0.8))
+    return Image.composite(couple, blurred, mask)
 
 
 def bottom_shade(img):
