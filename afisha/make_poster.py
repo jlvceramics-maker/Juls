@@ -141,17 +141,23 @@ def emblem(img):
     h = 300
     em = em.resize((round(em.width * h / em.height), h), Image.LANCZOS)
     x, y = W - em.width - 60, 40
-    # мягкая тень, чтобы серый не терялся на светлом потолке
-    glow = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    a = em.split()[3].point(lambda v: v * 0.55)
-    glow.paste((0, 0, 0, 255), (x, y), a)
-    glow = glow.filter(ImageFilter.GaussianBlur(10))
-    out = Image.alpha_composite(img.convert("RGBA"), glow)
+    # светлая полупрозрачная подложка под эмблемой
+    # (матовое стекло: фон под ней ещё размыт; эмблема рисовалась под белый фон,
+    # поэтому подложка почти белая — иначе серые буквы теряются)
+    pad = 22
+    box = [x - pad, y - pad, x + em.width + pad, y + h + pad]
+    shape = Image.new("L", img.size, 0)
+    ImageDraw.Draw(shape).rounded_rectangle(box, radius=18, fill=255)
+    out = img.convert("RGBA")
+    out = Image.composite(out.filter(ImageFilter.GaussianBlur(16)), out, shape)
+    white = Image.new("RGBA", img.size, (255, 255, 255, 0))
+    white.putalpha(shape.point(lambda v: v * 200 // 255))
+    out = Image.alpha_composite(out, white)
     out.alpha_composite(em, (x, y))
     return out
 
 
-def text(img):
+def text(img, venue=True):
     big = ImageFont.truetype(str(HERE / "Oswald-600.ttf"), 68)
     small = ImageFont.truetype(str(HERE / "Oswald-600.ttf"), 42)
     lines = [
@@ -159,6 +165,8 @@ def text(img):
                     ("    25 ОКТЯБРЯ ", RED), ("В 15.00", GRAY)]),
         (small, 1050, [("КРАСНОЗНАМЁННЫЙ ЗАЛ, ", RED), ("ВХОД ПО ПРИГЛАШЕНИЯМ", GRAY)]),
     ]
+    if not venue:   # короткий вариант: одна строка внизу, как в первой версии
+        lines = [(ImageFont.truetype(str(HERE / "Oswald-600.ttf"), 72), 1020, lines[0][2])]
     x0 = 70
     layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
     shadow = Image.new("RGBA", img.size, (0, 0, 0, 0))
@@ -175,12 +183,14 @@ def text(img):
     out = Image.alpha_composite(img, shadow)
     out = Image.alpha_composite(out, layer)
     # красная линия между строками, как на эмблеме
-    ImageDraw.Draw(out).rectangle([x0, 990, ends[0], 997], fill=RED)
+    bar = 990 if venue else 1042
+    ImageDraw.Draw(out).rectangle([x0, bar, ends[0], bar + 7], fill=RED)
     return out
 
 
-img = bottom_shade(photo_layer())
-img = text(emblem(img))
-img.convert("RGB").save(HERE / "poster.png")
-img.convert("RGB").save(HERE / "poster.jpg", quality=95)
-print("ok", img.size)
+base = emblem(bottom_shade(photo_layer()))
+for name, venue in [("poster", True), ("poster_short", False)]:
+    img = text(base, venue).convert("RGB")
+    img.save(HERE / f"{name}.png")
+    img.save(HERE / f"{name}.jpg", quality=95)
+print("ok", base.size)
