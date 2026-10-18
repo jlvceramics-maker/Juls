@@ -14,7 +14,8 @@ RED = (227, 30, 36)
 GRAY = (179, 179, 179)
 
 SCALE = W / 1500          # фото 1500x1000 -> 1920x1280
-OFFSET_Y = 190            # обрезаем сверху, чтобы внизу осталось место под текст
+OFFSET_Y = 320            # поднимаем фото: внизу место под крупный текст;
+                          # не хватающий низ — зеркальное продолжение пола
 
 BLUR = 7                  # радиус размытия фона: лёгкое, но заметное
 
@@ -100,6 +101,13 @@ def match_colors(img, ref, mask):
 def photo_layer():
     src = Image.open(HERE / "photo.jpg").convert("RGB")
     big = src.resize((W, round(1000 * SCALE)), Image.LANCZOS)
+    extra = OFFSET_Y + H - big.height
+    if extra > 0:
+        floor = big.crop((0, big.height - extra, W, big.height)).transpose(Image.FLIP_TOP_BOTTOM)
+        tall = Image.new("RGB", (W, big.height + extra))
+        tall.paste(big, (0, 0))
+        tall.paste(floor, (0, big.height))
+        big = tall
     sharp = big.crop((0, OFFSET_Y, W, OFFSET_Y + H))
     couple = place_hires(Image.open(HERE / "couple_hires.jpg").convert("RGB"))
     hard = place_hires(couple_mask())
@@ -129,8 +137,8 @@ def photo_layer():
 def bottom_shade(img):
     shade = Image.new("L", (1, H), 0)
     for y in range(H):
-        t = max(0.0, (y - 760) / (H - 760))
-        shade.putpixel((0, y), int(215 * t ** 1.4))
+        t = max(0.0, (y - 600) / (H - 600))
+        shade.putpixel((0, y), int(225 * t ** 1.3))
     shade = shade.resize((W, H))
     black = Image.new("RGB", (W, H), (0, 0, 0))
     return Image.composite(black, img, shade)
@@ -157,40 +165,37 @@ def emblem(img):
     return out
 
 
-def text(img, venue=True):
-    big = ImageFont.truetype(str(HERE / "Oswald-600.ttf"), 68)
-    small = ImageFont.truetype(str(HERE / "Oswald-600.ttf"), 42)
+def text(img):
+    """Текстовый блок слева внизу: БАЛ / название / дата и место — по убыванию."""
+    font = lambda size: ImageFont.truetype(str(HERE / "Oswald-600.ttf"), size)
+    dot = ("  ·  ", RED)
     lines = [
-        (big, 972, [("БАЛ ", RED), ("«ВЫШЕ НАС ТОЛЬКО ЗВЁЗДЫ»", GRAY),
-                    ("    25 ОКТЯБРЯ ", RED), ("В 15.00", GRAY)]),
-        (small, 1050, [("КРАСНОЗНАМЁННЫЙ ЗАЛ, ", RED), ("ВХОД ПО ПРИГЛАШЕНИЯМ", GRAY)]),
+        (font(170), 812, [("БАЛ", RED)]),
+        (font(96), 930, [("«ВЫШЕ НАС ТОЛЬКО ЗВЁЗДЫ»", GRAY)]),
+        (font(52), 1040, [("25 ОКТЯБРЯ В 15.00", RED), dot, ("КРАСНОЗНАМЁННЫЙ ЗАЛ", GRAY),
+                          dot, ("ВХОД ПО ПРИГЛАШЕНИЯМ", GRAY)]),
     ]
-    if not venue:   # короткий вариант: одна строка внизу, как в первой версии
-        lines = [(ImageFont.truetype(str(HERE / "Oswald-600.ttf"), 72), 1020, lines[0][2])]
     x0 = 70
     layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
     shadow = Image.new("RGBA", img.size, (0, 0, 0, 0))
     d, ds = ImageDraw.Draw(layer), ImageDraw.Draw(shadow)
     ends = []
-    for font, base, parts in lines:
+    for f, base, parts in lines:
         x = x0
         for s, c in parts:
-            ds.text((x + 3, base + 3), s, font=font, fill=(0, 0, 0, 200), anchor="ls")
-            d.text((x, base), s, font=font, fill=c, anchor="ls")
-            x += d.textlength(s, font=font)
+            ds.text((x + 3, base + 3), s, font=f, fill=(0, 0, 0, 200), anchor="ls")
+            d.text((x, base), s, font=f, fill=c, anchor="ls")
+            x += d.textlength(s, font=f)
         ends.append(x)
-    shadow = shadow.filter(ImageFilter.GaussianBlur(5))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(6))
     out = Image.alpha_composite(img, shadow)
     out = Image.alpha_composite(out, layer)
-    # красная линия между строками, как на эмблеме
-    bar = 990 if venue else 1042
-    ImageDraw.Draw(out).rectangle([x0, bar, ends[0], bar + 7], fill=RED)
+    # красная линия под названием, как на эмблеме
+    ImageDraw.Draw(out).rectangle([x0, 958, max(ends), 965], fill=RED)
     return out
 
 
-base = emblem(bottom_shade(photo_layer()))
-for name, venue in [("poster", True), ("poster_short", False)]:
-    img = text(base, venue).convert("RGB")
-    img.save(HERE / f"{name}.png")
-    img.save(HERE / f"{name}.jpg", quality=95)
-print("ok", base.size)
+img = text(emblem(bottom_shade(photo_layer()))).convert("RGB")
+img.save(HERE / "poster.png")
+img.save(HERE / "poster.jpg", quality=95)
+print("ok", img.size)
