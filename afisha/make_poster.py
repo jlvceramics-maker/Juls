@@ -152,23 +152,30 @@ def emblem(img):
 
 
 def text(img):
-    font = ImageFont.truetype(str(HERE / "Oswald-600.ttf"), 72)
-    parts = [("БАЛ ", RED), ("«ВЫШЕ НАС ТОЛЬКО ЗВЁЗДЫ»", GRAY),
-             ("    25 ОКТЯБРЯ ", RED), ("В 15.00", GRAY)]
-    x0, base = 70, 1020
+    big = ImageFont.truetype(str(HERE / "Oswald-600.ttf"), 68)
+    small = ImageFont.truetype(str(HERE / "Oswald-600.ttf"), 42)
+    lines = [
+        (big, 972, [("БАЛ ", RED), ("«ВЫШЕ НАС ТОЛЬКО ЗВЁЗДЫ»", GRAY),
+                    ("    25 ОКТЯБРЯ ", RED), ("В 15.00", GRAY)]),
+        (small, 1050, [("КРАСНОЗНАМЁННЫЙ ЗАЛ, ", RED), ("ВХОД ПО ПРИГЛАШЕНИЯМ", GRAY)]),
+    ]
+    x0 = 70
     layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
     shadow = Image.new("RGBA", img.size, (0, 0, 0, 0))
     d, ds = ImageDraw.Draw(layer), ImageDraw.Draw(shadow)
-    x = x0
-    for s, c in parts:
-        ds.text((x + 3, base + 3), s, font=font, fill=(0, 0, 0, 200), anchor="ls")
-        d.text((x, base), s, font=font, fill=c, anchor="ls")
-        x += d.textlength(s, font=font)
+    ends = []
+    for font, base, parts in lines:
+        x = x0
+        for s, c in parts:
+            ds.text((x + 3, base + 3), s, font=font, fill=(0, 0, 0, 200), anchor="ls")
+            d.text((x, base), s, font=font, fill=c, anchor="ls")
+            x += d.textlength(s, font=font)
+        ends.append(x)
     shadow = shadow.filter(ImageFilter.GaussianBlur(5))
     out = Image.alpha_composite(img, shadow)
     out = Image.alpha_composite(out, layer)
-    # красная линия как на эмблеме
-    ImageDraw.Draw(out).rectangle([x0, base + 22, x, base + 30], fill=RED)
+    # красная линия между строками, как на эмблеме
+    ImageDraw.Draw(out).rectangle([x0, 990, ends[0], 997], fill=RED)
     return out
 
 
