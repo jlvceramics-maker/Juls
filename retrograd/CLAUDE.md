@@ -27,6 +27,7 @@
 - `profile.md` — шапки профиля для всех площадок (цель: популярность + заказы на музыку)
 - `teleprompter.html` — телесуфлёр с текстом вступления (опубликован: https://claude.ai/artifact/2fbyCRYXYBByyCayjwU2QQ)
 - `teleprompter-ai-ads.html` — телесуфлёр «Чем вредна реклама, созданная ИИ» (https://claude.ai/artifact/GYLwWw8Wd5CnDnv7crGfKN)
+- `teleprompter-vysotsky.html` — телесуфлёр «Высоцкий не прошёл бы кастинг» (https://claude.ai/artifact/QLyDCWJz477YnPRSyAiorc)
 - `plan-ai-ads.html` — план того же ролика на одном экране планшета (https://claude.ai/artifact/BnWwGgABcjF6hS1ixzcniz)
 - Финальное вступление (монтаж в стиле рилс: вырезанные паузы, смена плана на склейках, фото со щелчком; `video/render_cut.py` (склейки по кадрам)): https://claude.ai/artifact/GmqqNCg4pzN4bLLkjUAdGi; сборка — `video/render_final.py`
 - `author.md` — собственные мысли и формулировки автора (первоисточник); дополнять после интервью
