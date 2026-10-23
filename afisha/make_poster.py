@@ -14,10 +14,18 @@ RED = (227, 30, 36)
 GRAY = (179, 179, 179)
 
 SCALE = W / 1500          # фото 1500x1000 -> 1920x1280
+OFFSET_X = 0
 OFFSET_Y = 320            # поднимаем фото: внизу место под крупный текст;
                           # не хватающий низ — зеркальное продолжение пола
 
 BLUR = 7                  # радиус размытия фона: лёгкое, но заметное
+
+
+def set_geometry(w, h, scale, offset_y, offset_x=0, blur=None):
+    """Другой размер афиши (make_wide.py): холст, масштаб фото и его сдвиг."""
+    global W, H, SCALE, OFFSET_X, OFFSET_Y, BLUR
+    W, H, SCALE, OFFSET_X, OFFSET_Y = w, h, scale, offset_x, offset_y
+    BLUR = blur or round(7 * scale / 1.28)
 
 # Пара берётся с крупного скриншота оригинала (couple_hires.jpg, 1390x2000):
 # в photo.jpg (1500x1000, пришло сжатым через чат) она слишком мелкая.
@@ -26,7 +34,8 @@ HI_SCALE, HI_DX, HI_DY = 0.431683, 388.785, 69.845
 
 
 def hi_to_canvas(x, y):
-    return (x * HI_SCALE + HI_DX) * SCALE, (y * HI_SCALE + HI_DY) * SCALE - OFFSET_Y
+    return ((x * HI_SCALE + HI_DX) * SCALE - OFFSET_X,
+            (y * HI_SCALE + HI_DY) * SCALE - OFFSET_Y)
 
 
 def photo_to_hi(x, y):
@@ -100,15 +109,14 @@ def match_colors(img, ref, mask):
 
 def photo_layer():
     src = Image.open(HERE / "photo.jpg").convert("RGB")
-    big = src.resize((W, round(1000 * SCALE)), Image.LANCZOS)
-    extra = OFFSET_Y + H - big.height
-    if extra > 0:
-        floor = big.crop((0, big.height - extra, W, big.height)).transpose(Image.FLIP_TOP_BOTTOM)
-        tall = Image.new("RGB", (W, big.height + extra))
-        tall.paste(big, (0, 0))
-        tall.paste(floor, (0, big.height))
-        big = tall
-    sharp = big.crop((0, OFFSET_Y, W, OFFSET_Y + H))
+    big = src.resize((round(1500 * SCALE), round(1000 * SCALE)), Image.LANCZOS)
+    # не хватает фото до края холста — зеркально продолжаем (пол внизу, зал справа)
+    extra_y = max(0, OFFSET_Y + H - big.height)
+    extra_x = max(0, OFFSET_X + W - big.width)
+    if extra_x or extra_y:
+        big = Image.fromarray(np.pad(np.asarray(big), ((0, extra_y), (0, extra_x), (0, 0)),
+                                     mode="symmetric"))
+    sharp = big.crop((OFFSET_X, OFFSET_Y, OFFSET_X + W, OFFSET_Y + H))
     couple = place_hires(Image.open(HERE / "couple_hires.jpg").convert("RGB"))
     hard = place_hires(couple_mask())
     couple = match_colors(couple, sharp, hard)
@@ -144,11 +152,10 @@ def bottom_shade(img):
     return Image.composite(black, img, shade)
 
 
-def emblem(img):
+def emblem(img, h=300, margin=60, top=40):
     em = Image.open(HERE / "emblem.png").convert("RGBA")
-    h = 300
     em = em.resize((round(em.width * h / em.height), h), Image.LANCZOS)
-    x, y = W - em.width - 60, 40
+    x, y = W - em.width - margin, top
     # светлая полупрозрачная подложка под эмблемой
     # (матовое стекло: фон под ней ещё размыт; эмблема рисовалась под белый фон,
     # поэтому подложка почти белая — иначе серые буквы теряются)
@@ -195,7 +202,8 @@ def text(img):
     return out
 
 
-img = text(emblem(bottom_shade(photo_layer()))).convert("RGB")
-img.save(HERE / "poster.png")
-img.save(HERE / "poster.jpg", quality=95)
-print("ok", img.size)
+if __name__ == "__main__":
+    img = text(emblem(bottom_shade(photo_layer()))).convert("RGB")
+    img.save(HERE / "poster.png")
+    img.save(HERE / "poster.jpg", quality=95)
+    print("ok", img.size)
